@@ -1,0 +1,171 @@
+/*
+  Learning Objective:
+  This tutorial will guide you through creating a dynamic and animated
+  progress bar using CSS transitions and keyframes. We'll focus on
+  visualizing data loading, a common UI pattern, by animating the
+  width of the progress bar.
+*/
+
+/*
+  ---------------------------------------------------------------------------
+  Progress Bar Structure & Basic Styling
+  ---------------------------------------------------------------------------
+*/
+
+/*
+  The main container for our progress bar.
+  It's important to give it a defined width and height, and also
+  to set its position to 'relative' if we plan to absolutely position
+  any child elements inside it (like text, though we won't in this basic example).
+*/
+.progress-bar-container {
+  width: 300px; /* The total width of the progress bar */
+  height: 30px;  /* The height of the progress bar */
+  background-color: #e0e0e0; /* A light grey background for the unfilled portion */
+  border-radius: 15px; /* Rounded corners for a softer look */
+  overflow: hidden; /* Crucial for keeping the inner bar within the rounded corners */
+  margin: 20px 0;   /* Some vertical spacing for better presentation */
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); /* Subtle inner shadow for depth */
+}
+
+/*
+  This is the actual progress indicator. It will fill up as data loads.
+  We start it at 0% width, meaning it's completely empty.
+  Its background color represents the "filled" portion of the progress bar.
+  'position: absolute' is used here to align it within its relative parent.
+  'top' and 'left' at 0 ensure it starts at the top-left corner of the container.
+  'height: 100%' makes it fill the entire height of its parent.
+*/
+.progress-bar-fill {
+  width: 0%; /* Initially, the bar is empty. This will be animated. */
+  height: 100%; /* Occupies the full height of its parent container */
+  background-color: #4CAF50; /* A vibrant green for good progress */
+  border-radius: 15px; /* Matching rounded corners to the container */
+  display: flex; /* Using flexbox to potentially center text later if needed */
+  align-items: center; /* Vertically centers content */
+  justify-content: center; /* Horizontally centers content */
+  font-size: 14px; /* For any text we might add */
+  color: white; /* Color of the text */
+  transition: width 0.5s ease-in-out; /* THIS IS KEY for smooth animation! */
+                                    /* 'width' property will animate */
+                                    /* '0.5s' is the duration of the animation */
+                                    /* 'ease-in-out' is the timing function (starts slow, speeds up, ends slow) */
+}
+
+/*
+  ---------------------------------------------------------------------------
+  Animation: The "Stripes" Effect (Optional but visually engaging)
+  ---------------------------------------------------------------------------
+*/
+
+/*
+  We'll use CSS keyframes to create a moving stripe effect.
+  This makes the progress bar look more dynamic and visually engaging,
+  simulating activity.
+*/
+
+/*
+  Define the animation keyframes.
+  'progress-stripes' is the name of our animation.
+  0% { background-position: 0 0; } : At the start of the animation, the background
+                                     position is at its default.
+  100% { background-position: 40px 0; } : At the end, we shift the background
+                                        position 40 pixels to the right.
+                                        This creates the illusion of movement.
+*/
+@keyframes progress-stripes {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0; /* Moves the stripes to the right */
+  }
+}
+
+/*
+  Applying the stripes effect to the progress bar fill.
+  'background-image' creates the repeating stripe pattern.
+  'linear-gradient' is used to define the colors and angles of the stripes.
+    - We use a transparent color at the start and end of each stripe to create gaps.
+    - The angle is 45 degrees.
+  'background-size' is set to '40px 40px' to control the size and spacing of the stripes.
+  'animation' property applies our keyframes:
+    - 'progress-stripes' is the name of the animation.
+    - '1s' is the duration of one cycle of the animation.
+    - 'linear' is the timing function (constant speed).
+    - 'infinite' means the animation will repeat forever.
+*/
+.progress-bar-fill.animated-stripes {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 40px 40px; /* Controls the size of the stripes */
+  animation: progress-stripes 1s linear infinite; /* Apply the animation */
+}
+
+/*
+  ---------------------------------------------------------------------------
+  Example Usage (How to control the progress bar with JavaScript)
+  ---------------------------------------------------------------------------
+*/
+
+/*
+  To make this dynamic, you would typically use JavaScript to update the
+  'width' style property of the '.progress-bar-fill' element.
+  Here's a conceptual example of how you might do it:
+
+  Let's say you have an HTML structure like this:
+  <div class="progress-bar-container">
+    <div class="progress-bar-fill" id="myProgressBar"></div>
+  </div>
+
+  And some JavaScript code:
+
+  const progressBar = document.getElementById('myProgressBar');
+  let currentProgress = 0;
+  const targetProgress = 75; // Example: data loaded 75%
+
+  function updateProgress() {
+    if (currentProgress < targetProgress) {
+      currentProgress += 5; // Increment progress by 5%
+      progressBar.style.width = currentProgress + '%';
+      progressBar.textContent = currentProgress + '%'; // Optionally display text
+      setTimeout(updateProgress, 100); // Call again after 100ms
+    } else {
+      progressBar.style.width = targetProgress + '%';
+      progressBar.textContent = targetProgress + '%'; // Ensure it reaches target
+      // Optionally add the animated-stripes class when loading is complete or in progress
+      // progressBar.classList.add('animated-stripes');
+    }
+  }
+
+  // Start the animation
+  updateProgress();
+
+  // To activate the animated stripes:
+  // You could add the class after a certain amount of progress is made,
+  // or keep it on during the loading process.
+  // For example, to have it on while loading:
+  // (This would be placed inside the updateProgress function where appropriate)
+  // if (currentProgress < targetProgress) {
+  //   progressBar.classList.add('animated-stripes');
+  // } else {
+  //   progressBar.classList.remove('animated-stripes'); // Or keep it on for a "completed" look
+  // }
+*/
+
+/*
+  Note on Accessibility:
+  For true accessibility, consider adding ARIA attributes to your progress bar
+  element (e.g., role="progressbar", aria-valuenow, aria-valuemin, aria-valuemax).
+  This helps screen readers convey the loading status to users with visual impairments.
+  Example ARIA attributes would be added to the .progress-bar-container or .progress-bar-fill
+  element via JavaScript when updating its value.
+*/
