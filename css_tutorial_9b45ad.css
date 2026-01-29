@@ -1,0 +1,218 @@
+/*
+  Learning Objective:
+  This tutorial teaches how to create an interactive CSS gradient generator.
+  We'll focus on using CSS variables (custom properties) to control gradient
+  colors and angles, and explore how JavaScript (though not directly in this CSS-only example)
+  would typically interact with these variables to create dynamic user interfaces.
+
+  This CSS code defines the structure and styling for a gradient generator.
+  It uses CSS variables to make the gradient highly customizable.
+  By changing the values of these variables (which would normally be done via JavaScript
+  in a real-time interactive tool), you can alter the gradient's appearance.
+*/
+
+/*----------------------------------------------------------------------------
+  1. Define CSS Variables (Custom Properties)
+----------------------------------------------------------------------------
+   CSS variables, also known as custom properties, start with '--'.
+   They allow you to store values that can be reused throughout your stylesheet.
+   This is crucial for making our gradient interactive without repeating code.
+   We define default values here, which can be overridden later.
+*/
+
+:root {
+  /* Default colors for our gradient */
+  --gradient-color-1: #ff9a9e; /* A soft pink */
+  --gradient-color-2: #fad0c4; /* A peachy tone */
+
+  /* Default angle for our gradient */
+  --gradient-angle: 45deg; /* Starting at a 45-degree angle */
+
+  /* Fallback background color in case gradients aren't supported */
+  background-color: #cccccc;
+}
+
+/*----------------------------------------------------------------------------
+  2. Styling the Gradient Display Area
+----------------------------------------------------------------------------
+   This section styles the container that will display our generated gradient.
+   We'll give it a fixed size and center it for better presentation.
+*/
+
+.gradient-display {
+  width: 80%; /* Make the display area occupy 80% of its parent's width */
+  max-width: 600px; /* Set a maximum width to prevent it from becoming too large */
+  height: 300px; /* Fixed height for the gradient box */
+  margin: 50px auto; /* Center the display area horizontally and add some top/bottom margin */
+  border-radius: 10px; /* Slightly rounded corners for a softer look */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+
+  /*
+     Here's the magic! We apply the CSS linear-gradient.
+     Notice how we use our CSS variables (--gradient-angle, --gradient-color-1, --gradient-color-2).
+     This means that whenever these variables change, the gradient will update automatically.
+     This is the core of making it "interactive" from a CSS perspective.
+  */
+  background: linear-gradient(
+    var(--gradient-angle),
+    var(--gradient-color-1),
+    var(--gradient-color-2)
+  );
+
+  /*
+     Optional: Add a transition for smoother visual changes if JavaScript were to update the variables.
+     While not directly visible with just CSS, it's a good practice for interactive elements.
+     We're transitioning the 'background' property, though in a real scenario,
+     transitions on individual color/angle properties might be more performant if available.
+  */
+  transition: background 0.5s ease-in-out;
+}
+
+/*----------------------------------------------------------------------------
+  3. Styling the Control Panel (Conceptual)
+----------------------------------------------------------------------------
+   In a real interactive generator, you'd have input elements (color pickers, sliders)
+   here. This CSS sets up a container for those controls.
+   We'll add basic styling to show where these controls would go.
+*/
+
+.controls {
+  text-align: center; /* Center the control elements */
+  margin-top: 30px; /* Space above the controls */
+}
+
+.control-group {
+  margin-bottom: 20px; /* Space between different control groups (e.g., color 1, color 2, angle) */
+}
+
+label {
+  display: block; /* Make labels appear on their own line */
+  margin-bottom: 8px; /* Space between label and its input */
+  font-weight: bold; /* Make labels stand out */
+  color: #333; /* Dark gray color for labels */
+}
+
+/*
+   These are example styles for hypothetical input elements.
+   In a real app, you'd style <input type="color">, <input type="range">, etc.
+   For this example, we'll just style a placeholder div to represent an input.
+*/
+.input-placeholder {
+  display: inline-block; /* Allow elements to sit side-by-side */
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  color: #555;
+  cursor: pointer; /* Indicate that it's clickable */
+  margin-left: 10px; /* Space from label */
+  min-width: 100px; /* Give it a minimum width */
+  text-align: center;
+}
+
+/* Example styles for angle control */
+.angle-control .input-placeholder {
+  background-color: #e0f7fa; /* Light cyan background for angle */
+}
+
+/* Example styles for color controls */
+.color-control .input-placeholder {
+  background-color: #ffebee; /* Light red background for color */
+}
+.color-control-2 .input-placeholder {
+  background-color: #fff3e0; /* Light orange background for color */
+}
+
+/*----------------------------------------------------------------------------
+  4. Example Usage (HTML Structure)
+----------------------------------------------------------------------------
+   This section demonstrates how you would structure your HTML to use this CSS.
+   To make this truly interactive, you would add JavaScript to:
+   1. Select the .gradient-display element.
+   2. Select input elements (color pickers, sliders) for colors and angles.
+   3. Add event listeners to these inputs.
+   4. When an input changes, update the corresponding CSS variable on the :root
+      element or directly on the .gradient-display element.
+
+   Example HTML (not part of the CSS file, but for understanding):
+
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Interactive CSS Gradient Generator</title>
+       <link rel="stylesheet" href="your-css-file.css">
+       <style>
+         /* Basic body styling for the demo */
+         body {
+           font-family: sans-serif;
+           background-color: #f4f4f4;
+           margin: 0;
+           padding: 20px;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           min-height: 100vh;
+         }
+       </style>
+   </head>
+   <body>
+
+       <h1>CSS Gradient Generator</h1>
+
+       <div class="gradient-display"></div>
+
+       <div class="controls">
+           <div class="control-group color-control">
+               <label for="color1">Color 1:</label>
+               <div class="input-placeholder">#ff9a9e</div>
+               <!-- In a real app: <input type="color" id="color1" value="#ff9a9e"> -->
+           </div>
+           <div class="control-group color-control-2">
+               <label for="color2">Color 2:</label>
+               <div class="input-placeholder">#fad0c4</div>
+               <!-- In a real app: <input type="color" id="color2" value="#fad0c4"> -->
+           </div>
+           <div class="control-group angle-control">
+               <label for="angle">Angle:</label>
+               <div class="input-placeholder">45deg</div>
+               <!-- In a real app: <input type="range" id="angle" min="0" max="360" value="45"> -->
+           </div>
+       </div>
+
+       <script>
+         // This JavaScript would be added to make it interactive:
+         /*
+         const color1Input = document.getElementById('color1');
+         const color2Input = document.getElementById('color2');
+         const angleInput = document.getElementById('angle');
+         const gradientDisplay = document.querySelector('.gradient-display');
+         const root = document.documentElement; // Gets the <html> element
+
+         // Function to update CSS variables
+         function updateGradient() {
+           root.style.setProperty('--gradient-color-1', color1Input.value);
+           root.style.setProperty('--gradient-color-2', color2Input.value);
+           root.style.setProperty('--gradient-angle', `${angleInput.value}deg`);
+
+           // Update placeholder text for demo
+           document.querySelector('.color-control .input-placeholder').textContent = color1Input.value;
+           document.querySelector('.color-control-2 .input-placeholder').textContent = color2Input.value;
+           document.querySelector('.angle-control .input-placeholder').textContent = `${angleInput.value}deg`;
+         }
+
+         // Add event listeners
+         color1Input.addEventListener('input', updateGradient);
+         color2Input.addEventListener('input', updateGradient);
+         angleInput.addEventListener('input', updateGradient);
+
+         // Initial update to set the display based on default values
+         updateGradient();
+         */
+       </script>
+
+   </body>
+   </html>
+
+*/
