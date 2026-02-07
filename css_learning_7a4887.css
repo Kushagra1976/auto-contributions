@@ -1,0 +1,292 @@
+This tutorial will guide you through building a simple, responsive, and interactive bar chart using only CSS custom properties, calc(), and pseudo-elements. We'll focus on how these modern CSS features enable dynamic visualization without JavaScript.
+
+Our learning objective: Understand how to leverage CSS custom properties (variables) to store data, calc() for dynamic sizing based on that data, and pseudo-elements (::before, ::after) to render distinct visual parts of a component, culminating in a data visualization.
+
+--- START CSS TUTORIAL ---
+
+/*
+  Global CSS Variables (Custom Properties)
+  These are defined on the root element (<html>) so they can be accessed anywhere in the CSS.
+  They are crucial for our dynamic sizing and customization.
+*/
+:root {
+  --max-data-value: 100; /* Defines the maximum possible value for our chart data.
+                           All bar heights will be calculated relative to this value. */
+  --chart-height: 300px; /* The overall height of our chart container.
+                            This provides a fixed reference for bar heights. */
+  --bar-width: 60px;     /* The default width for each bar. */
+  --bar-gap: 10px;       /* The spacing between bars. */
+}
+
+/*
+  Basic Reset and Body Styling
+  This sets up a clean canvas and centers our chart for better presentation.
+*/
+body {
+  font-family: Arial, sans-serif;
+  display: flex; /* Use flexbox to center the content */
+  justify-content: center; /* Horizontally center */
+  align-items: center; /* Vertically center */
+  min-height: 100vh; /* Make body take at least full viewport height */
+  margin: 0;
+  background-color: #f4f4f4;
+  overflow: hidden; /* Prevent scrollbars from appearing due to animation */
+}
+
+/*
+  Chart Container Styling
+  This element holds all our bars and defines the overall layout of the chart.
+*/
+.chart-container {
+  display: flex; /* Use flexbox to arrange bars horizontally */
+  align-items: flex-end; /* Bars will start from the bottom and grow upwards */
+  height: var(--chart-height); /* Set the total height of the chart */
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  gap: var(--bar-gap); /* Spacing between bars, a modern flexbox feature */
+  max-width: 90vw; /* Make the chart responsive to viewport width */
+  overflow: hidden; /* Ensure bars don't overflow during interaction */
+  position: relative; /* For potential future absolute positioning */
+}
+
+/*
+  Individual Chart Bar Styling
+  Each .chart-bar element will represent a single data point.
+  It acts as a container for our pseudo-elements.
+*/
+.chart-bar {
+  --bar-value: 0; /* Default value for a bar, will be overridden by inline styles.
+                     This is a custom property defined PER bar instance. */
+  --bar-color: #66b3ff; /* Default color for a bar, can be overridden. */
+
+  position: relative; /* Essential for positioning pseudo-elements inside */
+  width: var(--bar-width); /* Set the width of each bar */
+  height: calc(var(--bar-value) / var(--max-data-value) * 100%);
+  /*
+    * The magic of CSS variables and calc()! *
+    - We calculate the height of the .chart-bar directly.
+    - `var(--bar-value)`: Gets the specific data value for THIS bar.
+    - `var(--max-data-value)`: Gets the global maximum value for scaling.
+    - `* 100%`: Multiplies the ratio by 100 to get a percentage of the parent's height.
+    - The parent's height is `--chart-height` from `.chart-container`.
+    This makes the bar's height proportional to its value relative to the max.
+  */
+  display: flex; /* To vertically align content if needed, though here for pseudo-elements */
+  justify-content: center; /* Center content horizontally */
+  align-items: flex-end; /* Align pseudo-elements to the bottom */
+
+  /* Add smooth transitions for interactive effects */
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  cursor: pointer; /* Indicate it's interactive */
+}
+
+/*
+  The Actual Bar Graphic (::before pseudo-element)
+  This pseudo-element creates the visible rectangle for the bar.
+  It fills its parent (.chart-bar) which already has the calculated height.
+*/
+.chart-bar::before {
+  content: ''; /* Pseudo-elements MUST have a content property */
+  position: absolute; /* Position it relative to its parent .chart-bar */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0; /* Makes it fill the entire .chart-bar element */
+  background-color: var(--bar-color); /* Use the custom bar color */
+  border-radius: 4px 4px 0 0; /* Rounded corners at the top */
+  transform-origin: bottom; /* Set the pivot point for scale animations to the bottom */
+  transition: transform 0.3s ease-out; /* Smooth transition for hover effects */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/*
+  The Value Label (::after pseudo-element)
+  This pseudo-element displays the numerical value of the bar.
+*/
+.chart-bar::after {
+  content: attr(style); /* A clever trick: grab the 'style' attribute content.
+                           We'll parse it to extract the --bar-value.
+                           More robust method explained below. */
+  /*
+    Better content approach for custom properties:
+    While `content: var(--bar-value);` works in many modern browsers
+    to display the numerical value directly, it's technically converting
+    a CSS variable to a string. The `attr(style)` trick is an older hack.
+    For maximum compatibility and semantic correctness,
+    a wrapper element with a `data-value` attribute is often preferred,
+    but for this "pure CSS" tutorial, `var(--bar-value)` is the goal.
+    Let's use a simpler, widely supported method for the content for beginners.
+  */
+  content: 'Value: ' counter(bar-value);
+  /*
+    Alternative for content: `content: var(--bar-value);` is the modern way,
+    but may require a specific HTML structure or JS to set the attribute
+    if you want to avoid `content: attr(data-value)`.
+    For this tutorial, let's stick to the concept of displaying the value.
+    We will use a workaround via a data attribute set via inline style.
+    No, actually `content: var(--bar-value)` actually works surprisingly well for numbers.
+    Let's use that for modernity.
+  */
+  content: var(--bar-value); /* Directly display the value from the CSS custom property */
+
+  position: absolute; /* Position relative to its parent .chart-bar */
+  top: -2.5em; /* Position above the bar */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust for its own width to truly center */
+  background-color: #333;
+  color: #fff;
+  padding: 0.3em 0.6em;
+  border-radius: 4px;
+  font-size: 0.8em;
+  white-space: nowrap; /* Prevent text wrapping */
+  opacity: 0; /* Hidden by default */
+  pointer-events: none; /* Allows mouse events to pass through to the bar below */
+  transition: opacity 0.3s ease-out, top 0.3s ease-out; /* Smooth transitions */
+  z-index: 10; /* Ensure label appears above other bars */
+}
+
+/*
+  Interactive Effects (on hover)
+  When the user hovers over a bar, we scale it slightly and show its value label.
+*/
+.chart-bar:hover::before {
+  transform: scaleY(1.05); /* Make the bar slightly taller */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); /* Enhance shadow on hover */
+}
+
+.chart-bar:hover::after {
+  opacity: 1; /* Show the value label */
+  top: -3.5em; /* Move label up slightly for a nice effect */
+}
+
+--- END CSS TUTORIAL ---
+
+--- EXAMPLE HTML USAGE ---
+
+Here's the HTML structure you would use with the CSS above.
+Notice how we set the `--bar-value` and `--bar-color` directly in the `style` attribute of each `.chart-bar`. This is how we pass data into our CSS custom properties on a per-element basis!
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure CSS Data Visualization</title>
+    <!-- Include the CSS code here, or link to a .css file -->
+    <style>
+        /* PASTE THE CSS TUTORIAL CODE ABOVE INTO THIS <style> TAG */
+
+        /* Global CSS Variables (Custom Properties) */
+        :root {
+          --max-data-value: 100;
+          --chart-height: 300px;
+          --bar-width: 60px;
+          --bar-gap: 10px;
+        }
+
+        /* Basic Reset and Body Styling */
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          margin: 0;
+          background-color: #f4f4f4;
+          overflow: hidden;
+        }
+
+        /* Chart Container Styling */
+        .chart-container {
+          display: flex;
+          align-items: flex-end;
+          height: var(--chart-height);
+          padding: 20px;
+          background-color: #fff;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          gap: var(--bar-gap);
+          max-width: 90vw;
+          overflow: hidden;
+          position: relative;
+        }
+
+        /* Individual Chart Bar Styling */
+        .chart-bar {
+          --bar-value: 0;
+          --bar-color: #66b3ff;
+
+          position: relative;
+          width: var(--bar-width);
+          height: calc(var(--bar-value) / var(--max-data-value) * 100%);
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+          transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+          cursor: pointer;
+        }
+
+        /* The Actual Bar Graphic (::before pseudo-element) */
+        .chart-bar::before {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          top: 0;
+          background-color: var(--bar-color);
+          border-radius: 4px 4px 0 0;
+          transform-origin: bottom;
+          transition: transform 0.3s ease-out;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* The Value Label (::after pseudo-element) */
+        .chart-bar::after {
+          content: var(--bar-value); /* Directly display the value */
+          position: absolute;
+          top: -2.5em;
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: #333;
+          color: #fff;
+          padding: 0.3em 0.6em;
+          border-radius: 4px;
+          font-size: 0.8em;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease-out, top 0.3s ease-out;
+          z-index: 10;
+        }
+
+        /* Interactive Effects (on hover) */
+        .chart-bar:hover::before {
+          transform: scaleY(1.05);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-bar:hover::after {
+          opacity: 1;
+          top: -3.5em;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="chart-container">
+        <!-- Each div.chart-bar represents a data point -->
+        <!-- We use inline styles to pass custom data values and colors to our CSS variables -->
+        <div class="chart-bar" style="--bar-value: 75; --bar-color: #4CAF50;"></div>
+        <div class="chart-bar" style="--bar-value: 40; --bar-color: #FFC107;"></div>
+        <div class="chart-bar" style="--bar-value: 90; --bar-color: #2196F3;"></div>
+        <div class="chart-bar" style="--bar-value: 60; --bar-color: #E91E63;"></div>
+        <div class="chart-bar" style="--bar-value: 25; --bar-color: #9C27B0;"></div>
+        <div class="chart-bar" style="--bar-value: 85; --bar-color: #00BCD4;"></div>
+    </div>
+
+</body>
+</html>
